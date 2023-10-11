@@ -1,9 +1,11 @@
 //Creating express server
 const express = require("express");
 const errorhandler = require("./middleware/errorHandler");
+const connectDB = require("./config/dbConnection");
 
 const dotenv = require("dotenv").config();
 
+connectDB();
 const app = express();
 
 //to accept the data from client
