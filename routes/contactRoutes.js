@@ -10,6 +10,10 @@ const {
   updateContact,
   deleteContact,
 } = require("../controllers/contactController");
+const validateToken = require("../middleware/validateTokenhandler");
+
+//For making all the routes as private, so only authorised user are able to access it
+router.use(validateToken)
 
 router.route("/").get(getContacts);
 
