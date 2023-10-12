@@ -2,12 +2,11 @@ const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
 
 const bcrpyt = require("bcrypt");
-const jwt = require("jsonwebtoke")
+const jwt = require("jsonwebtoken");
 
 //@dec Register a user
 //@route GET /api/user/register
 //@access public
-
 const registerUser = asyncHandler(async (req, res) => {
   //destructuring the info coming from user
 
@@ -54,25 +53,45 @@ const registerUser = asyncHandler(async (req, res) => {
 //@dec Login a user
 //@route GET /api/user/login
 //@access public
-
 const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
 
-    const {email,password} = req.body;
+  //Checking if user have entered all the value
+  if (!email || !password) {
+    res.status(400);
+    throw new Error("All fields are mandatory!");
+  }
 
-    //Checking if user have entered all the value
-    if(!email || !password)
-    {
-        res.status(400);
-        throw new Error("All fields are mandatory!")
-    }
+  //Checking if user exists in database or not
+  const user = await User.findOne({ email });
 
-  res.json({ message: "Login the user" });
+  //Checking if the password is correct or not
+  if (user && (await bcrpyt.compare(password, user.password))) {
+    //Giving payload in the token
+    const accessToken = jwt.sign(
+      {
+        user: {
+          username: user.username,
+          email: user.email,
+          id: user.id,
+        },
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "1m" }
+    );
+    res.status(200).json({ accessToken });
+  }
+  else{
+    res.status(401);
+    throw new Error("Email or password is not valid")
+  }
+
+ 
 });
 
 //@dec Current info user
 //@route GET /api/user/login
 //@access public
-
 const currentUser = asyncHandler(async (req, res) => {
   res.json({ message: "Current user info" });
 });
